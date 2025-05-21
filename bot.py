@@ -1,5 +1,6 @@
-import requests
-import feedparser
+import requests, feedparser
+from bs4 import BeautifulSoup
+from html import unescape
 
 BOT_TOKEN = "7352244492:AAGOrkQXT88z1OH975q09jWkBcoI3G3ifEQ"
 CHAT_ID = "-1002586854094"
@@ -9,9 +10,20 @@ SOURCES = [
     ("Investing", "https://www.investing.com/rss/news_285.rss"),
     ("Bloomberg", "https://www.bloomberg.com/feed/podcast/etf-report.xml"),
     ("Reuters", "https://feeds.reuters.com/reuters/businessNews"),
-    ("Coindesk", "https://www.coindesk.com/arc/outboundfeeds/rss/"),
-    # هر منبع فاندای مهم دیگه‌ای خواستی اضافه کن
+    ("Coindesk", "https://www.coindesk.com/arc/outboundfeeds/rss/")
 ]
+
+def analyze_news(title):
+    title = title.lower()
+    if "rate" in title or "interest" in title:
+        return "احتمالاً این خبر روی دلار و طلا تأثیر مستقیم دارد (نرخ بهره)."
+    elif "inflation" in title:
+        return "خبر مربوط به تورم است، ممکن است باعث نوسان در بازار طلا شود."
+    elif "war" in title or "conflict" in title:
+        return "تنش یا جنگ! احتمال رشد انس جهانی زیاد است."
+    elif "bitcoin" in title:
+        return "خبر مربوط به بیت‌کوین است و می‌تواند بازار کریپتو را حرکت دهد."
+    return "تحلیل مشخصی برای این خبر ارائه نشده."
 
 def get_latest_news():
     try:
@@ -24,20 +36,16 @@ def get_latest_news():
             feed = feedparser.parse(url)
             entry = feed.entries[0]
             news_id = getattr(entry, "id", entry.link)
-            title = entry.title
-            summary = entry.summary if hasattr(entry, 'summary') else ""
+            title = unescape(entry.title)
             link = entry.link
             if news_id == last_id:
-                continue  # پیام تکراری نیست
-            msg = f"""[خبر جدید از {name}]
-عنوان: {title}
-خلاصه: {summary}
-لینک: {link}
-"""
+                continue
+            analysis = analyze_news(title)
+            message = f"[خبر اقتصادی جدید از {name}]\nعنوان: {title}\nتحلیل: {analysis}\nلینک: {link}"
             with open("last_news_id.txt", "w") as f:
                 f.write(news_id)
-            return msg
-        except Exception as e:
+            return message
+        except:
             continue
     return None
 
@@ -51,6 +59,6 @@ def send_telegram_message(message):
     requests.post(url, data=payload)
 
 if __name__ == "__main__":
-    news = get_latest_news()
-    if news:
-        send_telegram_message(news)
+    msg = get_latest_news()
+    if msg:
+        send_telegram_message(msg)

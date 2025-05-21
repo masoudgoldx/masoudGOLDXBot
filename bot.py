@@ -1,23 +1,19 @@
 from news_engine import get_and_analyze_news
 from tech_analysis import get_technical_analysis
 
-# جمع‌آوری تحلیل فاندامنتال
 fundamental = get_and_analyze_news()
-
-# جمع‌آوری تحلیل تکنیکال
 technical = get_technical_analysis()
 
-# ترکیب پیام نهایی
 msg = f"""📡 تحلیل لحظه‌ای بازار جهانی
 
 📊 تحلیل فاندامنتال:
-{fundamental}
+{fundamental if fundamental.strip() else 'هیچ خبر فاندامنتال جدیدی در دسترس نیست.'}
 
 📉 تحلیل تکنیکال:
 {technical}
 """
 
-# ارسال پیام به تلگرام
+# ارسال پیام به تلگرام حتی اگر تحلیل فاندامنتال خالی باشد
 import requests
 import os
 

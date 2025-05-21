@@ -1,26 +1,38 @@
+import requests
 from news_engine import get_and_analyze_news
 from tech_analysis import get_technical_analysis
-import requests
-import os
 
-TOKEN = os.environ.get("TELEGRAM_TOKEN")
-CHAT_ID = os.environ.get("CHAT_ID")
-THREAD_ID = os.environ.get("THREAD_ID")
+TELEGRAM_API_URL = "https://api.telegram.org/bot7352244492:AAGOrkQXT88z1OH975q09jWkBcoI3G3ifEQ/sendMessage"
+CHAT_ID = "-1002586854094"
+THREAD_ID = 2
 
-def send_to_telegram(msg):
-    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-    data = {
+def send_telegram_message(message):
+    payload = {
         "chat_id": CHAT_ID,
-        "message_thread_id": int(THREAD_ID),
-        "text": msg
+        "message_thread_id": THREAD_ID,
+        "text": message
     }
-    requests.post(url, data=data)
+    response = requests.post(TELEGRAM_API_URL, data=payload)
+    return response.status_code == 200
+
+def format_news_message(news_data):
+    msg = "اخبار اقتصادی جدید با تحلیل ساده:\n\n"
+    for item in news_data:
+        msg += f"منبع: {item['source']}\n"
+        msg += f"عنوان: {item['title']}\n"
+        msg += f"خلاصه: {item['summary']}\n"
+        msg += "تأثیر احتمالی:\n"
+        for asset, direction in item['directions'].items():
+            msg += f"  - {asset}: {direction}\n"
+        msg += "\n"
+    return msg.strip()
+
+def main():
+    news_data = get_and_analyze_news()
+    news_message = format_news_message(news_data)
+    tech_message = get_technical_analysis()
+    final_message = f"{news_message}\n\n{'-'*30}\n\n{tech_message}"
+    send_telegram_message(final_message)
 
 if __name__ == "__main__":
-    news = get_and_analyze_news()
-    msg = "اخبار اقتصادی جدید:\n\n"
-    for item in news:
-        msg += f"[{item['source']}]\n{item['title']}\n{item['summary']}\nتحلیل: {item['directions']}\n\n"
-
-    msg += "\n" + get_technical_analysis()
-    send_to_telegram(msg)
+    main()

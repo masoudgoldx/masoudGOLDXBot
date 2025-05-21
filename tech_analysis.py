@@ -1,9 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 
-BOT_TOKEN = "توکن ربات"
-CHAT_ID = "-1002586854094"
-THREAD_ID = 2
+# تنظیمات ربات تلگرام
+BOT_TOKEN = "7352244492:AAGOrkQXT88z1OH975q09jWkBcoI3G3ifEQ"  # توکن ربات تو
+CHAT_ID = "-1002586854094"  # آیدی گروه یا کانال با -
+THREAD_ID = 2  # تاپیک خاص داخل گروه (در صورت نیاز)
 
 def get_technical_signal(symbol):
     url = f"https://www.investing.com/currencies/{symbol}-technical"
@@ -31,7 +32,6 @@ def send_telegram_message(message):
     requests.post(url, data=payload)
 
 if __name__ == "__main__":
-    # نمادهای مورد نظر
     pairs = {
         "xau-usd": "XAUUSD (انس جهانی)",
         "eur-usd": "EURUSD",

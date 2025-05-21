@@ -1,20 +1,19 @@
 import requests
 import feedparser
 
-# اطلاعات ربات
 BOT_TOKEN = "7352244492:AAGOrkQXT88z1OH975q09jWkBcoI3G3ifEQ"
 CHAT_ID = "-1002586854094"
 THREAD_ID = 2
 
-# منابع خبر
 SOURCES = [
     ("Investing", "https://www.investing.com/rss/news_25.rss"),
     ("Forexfactory", "https://www.forexfactory.com/ffcal_week_this.xml"),
-    ("Coindesk", "https://coindesk.com/arc/outboundfeeds/rss/")
+    ("Coindesk", "https://coindesk.com/arc/outboundfeeds/rss/"),
+    ("ایرنا", "https://www.irna.ir/rss.aspx"),
+    ("تسنیم سیاسی", "https://www.tasnimnews.com/fa/rss/feed/1/%D8%A7%D8%AE%D8%A8%D8%A7%D8%B1-%D8%B3%DB%8C%D8%A7%D8%B3%DB%8C")
 ]
 
 def translate_to_fa(text):
-    # ترجمه رایگان با MyMemory
     try:
         url = "https://api.mymemory.translated.net/get"
         params = {"q": text, "langpair": "en|fa"}
@@ -25,22 +24,56 @@ def translate_to_fa(text):
         return text
 
 def analyze(text):
-    pos = ["growth", "increase", "surge", "record high", "jump", "rise", "positive"]
-    neg = ["drop", "fall", "decline", "loss", "lower", "decrease", "down", "negative"]
+    # کلمات کلیدی تحلیل جهانی/سیاسی
+    pos = [
+        "growth", "increase", "surge", "record high", "jump", "rise", "positive", 
+        "توافق", "لغو تحریم", "برجام", "آتش‌بس", "صلح", "پیشرفت مذاکرات", "گشایش"
+    ]
+    neg = [
+        "drop", "fall", "decline", "loss", "lower", "decrease", "down", "negative", 
+        "تحریم", "شکست مذاکرات", "تحریم جدید", "تنش", "جنگ", "حمله", "درگیری", "اعتراض", "کاهش صادرات نفت", "افزایش تعرفه"
+    ]
+    region_pos = [
+        "توافق", "لغو تحریم", "صادرات نفت", "آزادسازی پول‌های بلوکه شده", 
+        "رشد صادرات", "پیشرفت مذاکرات", "گشایش", "امضای توافق"
+    ]
+    region_neg = [
+        "تحریم", "شکست مذاکرات", "تعلیق صادرات", "قطع ارتباط", 
+        "افزایش تحریم", "ممنوعیت صادرات", "تشدید تنش", "حمله"
+    ]
     text_l = text.lower()
+    # الگوریتم تحلیل ترکیبی اخبار اقتصادی و سیاسی
     if any(word in text_l for word in pos):
-        gold = "مثبت (احتمال رشد)"
+        ons = "مثبت (احتمال رشد)"
+        gold = "مثبت (با تاخیر یا کمتر از انس)"
+        dollar = "احتمال کاهش یا ثبات"
         eur = "مثبت"
         btc = "مثبت"
     elif any(word in text_l for word in neg):
-        gold = "منفی (احتمال ریزش)"
+        ons = "منفی (احتمال ریزش)"
+        gold = "منفی (با تاخیر یا کمتر از انس)"
+        dollar = "احتمال افزایش"
         eur = "منفی"
         btc = "منفی"
-    else:
-        gold = "خنثی"
+    elif any(word in text_l for word in region_pos):
+        ons = "خنثی یا منفی (آرامش منطقه‌ای)"
+        gold = "منفی (کاهش قیمت دلار و طلا داخلی)"
+        dollar = "احتمال کاهش"
         eur = "خنثی"
         btc = "خنثی"
-    return gold, eur, btc
+    elif any(word in text_l for word in region_neg):
+        ons = "خنثی یا مثبت (تنش منطقه‌ای)"
+        gold = "مثبت (افزایش قیمت دلار و طلا داخلی)"
+        dollar = "احتمال افزایش"
+        eur = "خنثی"
+        btc = "خنثی"
+    else:
+        ons = "خنثی"
+        gold = "خنثی"
+        dollar = "خنثی"
+        eur = "خنثی"
+        btc = "خنثی"
+    return ons, gold, dollar, eur, btc
 
 def get_latest_news():
     news = []
@@ -51,18 +84,20 @@ def get_latest_news():
             title = entry.title
             summary = entry.summary if hasattr(entry, 'summary') else ""
             # ترجمه فقط اگر انگلیسی بود
-            if name != "Forexfactory":
+            if name not in ["Forexfactory", "ایرنا", "تسنیم سیاسی"]:
                 fa_title = translate_to_fa(title)
                 fa_summary = translate_to_fa(summary)
             else:
                 fa_title = title
                 fa_summary = summary
-            gold, eur, btc = analyze(title + " " + summary)
-            msg = f"""[خبر اقتصادی جدید از {name}]
+            ons, gold, dollar, eur, btc = analyze(title + " " + summary)
+            msg = f"""[خبر اقتصادی یا سیاسی جدید از {name}]
 عنوان: {fa_title}
 تحلیل: {fa_summary}
 تأثیر:
-- طلا: {gold}
+- انس جهانی: {ons}
+- طلای داخلی: {gold}
+- دلار آزاد: {dollar}
 - یورو: {eur}
 - بیت‌کوین: {btc}
 """

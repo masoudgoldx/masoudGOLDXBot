@@ -1,16 +1,15 @@
-name: MasoudGOLDXBot Full Automation
+name: MasoudGOLDXBot Auto Run
 
 on:
   schedule:
-    - cron: '0 */2 * * *'  # اجرای خودکار هر ۲ ساعت
+    - cron: '0 */2 * * *'
   workflow_dispatch:
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Install dependencies
         run: pip install requests feedparser beautifulsoup4

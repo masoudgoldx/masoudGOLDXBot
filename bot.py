@@ -10,7 +10,7 @@ def main():
     technical = get_technical_analysis()
 
     final_message = (
-        "اخبار داخلی و اثرگذاری بر بازار:
+        "اخبار داخلی و اثرگذاری بر بازار:"
 
 " + internal + 
         "

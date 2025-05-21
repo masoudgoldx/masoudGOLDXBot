@@ -1,35 +1,56 @@
 import requests
+import feedparser
 
-def get_news():
-    # ... کد دریافت خبر از سایت خارجی مثل دیروز ...
-    # فرض کن خروجی تابع یک رشته خبر جدیده و اگر تکراری باشه خروجی '' برمی‌گرده
-    # مثلا:
-    latest_news = "خبر جدید اقتصادی ..."
-    return latest_news
+BOT_TOKEN = "7352244492:AAGOrkQXT88z1OH975q09jWkBcoI3G3ifEQ"
+CHAT_ID = "-1002586854094"
+THREAD_ID = 2
 
-def read_last_news():
+SOURCES = [
+    ("Investing", "https://www.investing.com/rss/news_285.rss"),
+    ("Bloomberg", "https://www.bloomberg.com/feed/podcast/etf-report.xml"),
+    ("Reuters", "https://feeds.reuters.com/reuters/businessNews"),
+    ("Coindesk", "https://www.coindesk.com/arc/outboundfeeds/rss/"),
+    # هر منبع فاندای مهم دیگه‌ای خواستی اضافه کن
+]
+
+def get_latest_news():
     try:
-        with open('last_news_id.txt', 'r') as f:
-            return f.read().strip()
-    except FileNotFoundError:
-        return ""
-
-def write_last_news(news):
-    with open('last_news_id.txt', 'w') as f:
-        f.write(news)
+        with open("last_news_id.txt", "r") as f:
+            last_id = f.read().strip()
+    except:
+        last_id = ""
+    for name, url in SOURCES:
+        try:
+            feed = feedparser.parse(url)
+            entry = feed.entries[0]
+            news_id = getattr(entry, "id", entry.link)
+            title = entry.title
+            summary = entry.summary if hasattr(entry, 'summary') else ""
+            link = entry.link
+            if news_id == last_id:
+                continue  # پیام تکراری نیست
+            msg = f"""[خبر جدید از {name}]
+عنوان: {title}
+خلاصه: {summary}
+لینک: {link}
+"""
+            with open("last_news_id.txt", "w") as f:
+                f.write(news_id)
+            return msg
+        except Exception as e:
+            continue
+    return None
 
 def send_telegram_message(message):
-    url = "https://api.telegram.org/bot<توکن_ربات>/sendMessage"
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {
-        "chat_id": "-1002586854094",  # آی‌دی گروه شما
-        "message_thread_id": 2,        # آیدی تاپیک
+        "chat_id": CHAT_ID,
+        "message_thread_id": THREAD_ID,
         "text": message
     }
     requests.post(url, data=payload)
 
 if __name__ == "__main__":
-    news = get_news()
-    last_news = read_last_news()
-    if news and news != last_news:
+    news = get_latest_news()
+    if news:
         send_telegram_message(news)
-        write_last_news(news)

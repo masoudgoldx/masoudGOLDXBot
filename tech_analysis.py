@@ -6,15 +6,31 @@ def get_signals(url):
     res = requests.get(url, headers=headers)
     soup = BeautifulSoup(res.text, 'html.parser')
 
-    try:
-        table = soup.find('table', class_='technicalSummaryTbl')
-        rows = table.find_all('tr')
-        # روند اصلی روزانه
-        signal = rows[2].find_all('td')[1].text.strip()
-        # حمایت و مقاومت
-        support = rows[2].find_all('td')[4].text.strip()
-        resistance = rows[2].find_all('td')[5].text.strip()
-    except Exception:
+    table = soup.find('table', class_='technicalSummaryTbl')
+    if not table:
+        print("❌ جدول تکنیکال پیدا نشد! شاید Investing اجازه دسترسی نمی‌دهد یا آی‌پی محدود شده.")
+        return "نامشخص", "?", "?"
+
+    rows = table.find_all('tr')
+    print(f"✅ تعداد ردیف جدول: {len(rows)}")
+    for i, row in enumerate(rows):
+        print(f"ردیف {i}: {row.text}")
+
+    # حالا بررسی می‌کنیم ردیف مناسب وجود دارد یا نه
+    if len(rows) > 2:
+        tds = rows[2].find_all('td')
+        print("🟢 سلول‌های ردیف سوم:", [td.text for td in tds])
+        try:
+            signal = tds[1].text.strip()
+            support = tds[4].text.strip()
+            resistance = tds[5].text.strip()
+        except Exception as e:
+            print("خطا در استخراج مقادیر:", e)
+            signal = "نامشخص"
+            support = "?"
+            resistance = "?"
+    else:
+        print("❗️ ردیف کافی برای استخراج سیگنال وجود ندارد.")
         signal = "نامشخص"
         support = "?"
         resistance = "?"
@@ -50,8 +66,10 @@ msg = (
     f"حمایت: {signals['BTCUSD']['support']} | مقاومت: {signals['BTCUSD']['resistance']}\n"
 )
 
-# توکن و آیدی مخصوص MasoudGOLDXBot
-BOT_TOKEN = "7352244492:AAGOrkQXT88z1OH975q09jWkBcoI3G3ifEQ"
+# اگر فقط لاگ و تست می‌خواهی خط پایین را فعال نکن.
+# اگر می‌خواهی پیام به تلگرام بفرستی، این بخش را فعال کن و توکن و آیدی را بذار:
+'''
+BOT_TOKEN = "توکن_بات"
 CHAT_ID = "-1002586854094"
 THREAD_ID = 2
 
@@ -62,3 +80,4 @@ payload = {
     "text": msg
 }
 requests.post(telegram_url, data=payload)
+'''

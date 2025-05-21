@@ -1,8 +1,8 @@
-name: Run Telegram Bot Every 15 Minutes
+name: Run MasoudGOLDX Technical Analysis Every 2 Hours
 
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '0 */2 * * *'
   workflow_dispatch:
 
 jobs:
@@ -12,8 +12,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: pip install requests feedparser
-
-      - name: Run the bot
-        run: python3 bot.py
+      - name: Run tech analysis
+        run: |
+          pip install requests beautifulsoup4
+          python3 tech_analysis.py

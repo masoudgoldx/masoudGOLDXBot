@@ -1,28 +1,44 @@
 import feedparser
 from bs4 import BeautifulSoup
+import requests
+import os
 
-feeds = [
-    ("https://feeds.reuters.com/reuters/businessNews", "Reuters"),
-    ("https://www.investing.com/rss/news_301.rss", "Investing"),
-    ("https://feeds.bbci.co.uk/news/world/rss.xml", "BBC")
+LAST_NEWS_FILE = "last_news_id.txt"
+FEEDS = [
+    "https://www.investing.com/rss/news_301.rss",        # اقتصاد جهان
+    "https://feeds.bbci.co.uk/persian/rss.xml",           # بی‌بی‌سی فارسی
 ]
 
-keywords = ["CPI", "interest rate", "inflation", "Fed", "ECB", "gold", "dollar", "recession"]
-
 def get_and_analyze_news():
-    messages = []
-    for url, source in feeds:
+    last_id = read_last_news_id()
+    news_texts = []
+
+    for url in FEEDS:
         feed = feedparser.parse(url)
-        for entry in feed.entries[:2]:
-            title = BeautifulSoup(entry.title, "html.parser").text
-            summary = BeautifulSoup(entry.get("summary", ""), "html.parser").text
-            impact = "نامشخص"
-            for key in keywords:
-                if key.lower() in (title + summary).lower():
-                    impact = f"اثرگذار (کلمه کلیدی: {key})"
-                    break
-            messages.append(f"[{source}]
-{title}
-{summary}
-تحلیل: {impact}")
-    return "\n\n".join(messages)
+        for entry in feed.entries[:5]:
+            if entry.id == last_id:
+                break
+            title = entry.title
+            summary = BeautifulSoup(entry.summary, "html.parser").text.strip()
+            link = entry.link
+            text = f"{title}\n{summary}\n{link}"
+            news_texts.append(text)
+
+    if news_texts:
+        write_last_news_id(feed.entries[0].id)
+
+    impact = "🔍 تحلیل اخبار:\n"
+    for text in news_texts:
+        impact += f"• {text.splitlines()[0]}\n"
+
+    return impact if news_texts else "هیچ خبر جدید مهمی یافت نشد."
+
+def read_last_news_id():
+    if not os.path.exists(LAST_NEWS_FILE):
+        return ""
+    with open(LAST_NEWS_FILE, "r") as f:
+        return f.read().strip()
+
+def write_last_news_id(news_id):
+    with open(LAST_NEWS_FILE, "w") as f:
+        f.write(news_id)

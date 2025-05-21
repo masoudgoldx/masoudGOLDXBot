@@ -1,26 +1,19 @@
-name: MasoudGOLDXBot Auto News & Analysis
+name: Run Telegram Bot
 
 on:
-  schedule:
-    - cron: '*/15 * * * *'    # هر ۱۵ دقیقه برای فاندامنتال
-    - cron: '0 */2 * * *'     # هر دو ساعت برای تکنیکال
   workflow_dispatch:
+  schedule:
+    - cron: '0 */2 * * *'    # هر دو ساعت یکبار
 
 jobs:
-  run-bots:
+  run-bot:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Install dependencies
-        run: |
-          pip install requests feedparser beautifulsoup4
+        run: pip install requests feedparser beautifulsoup4
 
-      - name: Run fundamental (bot.py)
-        if: github.event.schedule == '*/15 * * * *'
+      - name: Run bot
         run: python3 bot.py
-
-      - name: Run technical (tech_analysis.py)
-        if: github.event.schedule == '0 */2 * * *'
-        run: python3 tech_analysis.py

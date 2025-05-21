@@ -1,26 +1,53 @@
-import requests
+import requests, feedparser
 from bs4 import BeautifulSoup
+from html import unescape
 
-# تنظیمات ربات تلگرام
-BOT_TOKEN = "7352244492:AAGOrkQXT88z1OH975q09jWkBcoI3G3ifEQ"  # توکن ربات تو
-CHAT_ID = "-1002586854094"  # آیدی گروه یا کانال با -
-THREAD_ID = 2  # تاپیک خاص داخل گروه (در صورت نیاز)
+BOT_TOKEN = "7352244492:AAGOrkQXT88z1OH975q09jWkBcoI3G3ifEQ"
+CHAT_ID = "-1002586854094"
+THREAD_ID = 2
 
-def get_technical_signal(symbol):
-    url = f"https://www.investing.com/currencies/{symbol}-technical"
-    headers = {
-        "User-Agent": "Mozilla/5.0",
-        "X-Requested-With": "XMLHttpRequest"
-    }
+SOURCES = [
+    ("Investing", "https://www.investing.com/rss/news_285.rss"),
+    ("Bloomberg", "https://www.bloomberg.com/feed/podcast/etf-report.xml"),
+    ("Reuters", "https://feeds.reuters.com/reuters/businessNews"),
+    ("Coindesk", "https://www.coindesk.com/arc/outboundfeeds/rss/")
+]
+
+def analyze_news(title):
+    title = title.lower()
+    if "rate" in title or "interest" in title:
+        return "احتمالاً این خبر روی دلار و طلا تأثیر مستقیم دارد (نرخ بهره)."
+    elif "inflation" in title:
+        return "خبر مربوط به تورم است، ممکن است باعث نوسان در بازار طلا شود."
+    elif "war" in title or "conflict" in title:
+        return "تنش یا جنگ! احتمال رشد انس جهانی زیاد است."
+    elif "bitcoin" in title:
+        return "خبر مربوط به بیت‌کوین است و می‌تواند بازار کریپتو را حرکت دهد."
+    return "تحلیل مشخصی برای این خبر ارائه نشده."
+
+def get_latest_news():
     try:
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.text, "html.parser")
-        signal = soup.select_one(".summaryTable tr:nth-child(1) td:nth-child(2)").text.strip()
-        support = soup.select_one(".summaryTable tr:nth-child(3) td:nth-child(2)").text.strip()
-        resistance = soup.select_one(".summaryTable tr:nth-child(4) td:nth-child(2)").text.strip()
-        return signal, support, resistance
+        with open("last_news_id.txt", "r") as f:
+            last_id = f.read().strip()
     except:
-        return "نامشخص", "?", "?"
+        last_id = ""
+    for name, url in SOURCES:
+        try:
+            feed = feedparser.parse(url)
+            entry = feed.entries[0]
+            news_id = getattr(entry, "id", entry.link)
+            title = unescape(entry.title)
+            link = entry.link
+            if news_id == last_id:
+                continue
+            analysis = analyze_news(title)
+            message = f"[خبر اقتصادی جدید از {name}]\nعنوان: {title}\nتحلیل: {analysis}\nلینک: {link}"
+            with open("last_news_id.txt", "w") as f:
+                f.write(news_id)
+            return message
+        except:
+            continue
+    return None
 
 def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
@@ -32,20 +59,6 @@ def send_telegram_message(message):
     requests.post(url, data=payload)
 
 if __name__ == "__main__":
-    pairs = {
-        "xau-usd": "XAUUSD (انس جهانی)",
-        "eur-usd": "EURUSD",
-        "btc-usd": "BTCUSD"
-    }
-
-    msg = "[تحلیل تکنیکال خودکار امروز]\n"
-
-    for symbol_url, symbol_name in pairs.items():
-        signal, support, resistance = get_technical_signal(symbol_url)
-        msg += (
-            f"\nنماد: {symbol_name}\n"
-            f"سیگنال: {signal}\n"
-            f"حمایت: {support} | مقاومت: {resistance}\n"
-        )
-
-    send_telegram_message(msg)
+    msg = get_latest_news()
+    if msg:
+        send_telegram_message(msg)

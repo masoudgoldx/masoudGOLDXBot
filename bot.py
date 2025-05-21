@@ -1,37 +1,31 @@
-
+import os
+import requests
 from news_engine import get_and_analyze_news
 from tech_analysis import get_technical_analysis
-from internal_news import get_internal_news
-from utils import send_telegram_message, load_last_message, save_last_message
 
-def main():
-    internal = get_internal_news()
-    international = get_and_analyze_news()
-    technical = get_technical_analysis()
+news_report = get_and_analyze_news()
+technical_report = get_technical_analysis()
 
-    final_message = (
-        "اخبار داخلی و اثرگذاری بر بازار:"
+msg = (
+    "تحلیل فاندامنتال:
+"
+    + news_report
+    + "
+-----------------------------
+"
+    + "تحلیل تکنیکال:
+"
+    + technical_report
+)
 
-" + internal + 
-        "
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
---------------------------
+url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+payload = {
+    "chat_id": CHAT_ID,
+    "text": msg,
+}
 
-" +
-        "اخبار بین‌المللی مهم:
-
-" + international +
-        "
-
---------------------------
-
-" +
-        technical
-    )
-
-    if final_message.strip() != load_last_message():
-        send_telegram_message(final_message)
-        save_last_message(final_message)
-
-if __name__ == "__main__":
-    main()
+response = requests.post(url, data=payload)
+print("Message sent:", response.status_code == 200)

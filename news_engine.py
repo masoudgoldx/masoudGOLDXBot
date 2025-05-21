@@ -1,24 +1,28 @@
 import feedparser
 from bs4 import BeautifulSoup
 
-def get_and_analyze_news():
-    feeds = [
-        ("https://www.investing.com/rss/news_301.rss", "Investing"),
-        ("https://feeds.bbci.co.uk/news/world/rss.xml", "BBC"),
-        ("https://www.tabnak.ir/fa/rss/3/0", "Tabnak"),
-    ]
+feeds = [
+    ("https://feeds.reuters.com/reuters/businessNews", "Reuters"),
+    ("https://www.investing.com/rss/news_301.rss", "Investing"),
+    ("https://feeds.bbci.co.uk/news/world/rss.xml", "BBC")
+]
 
-    news_items = []
+keywords = ["CPI", "interest rate", "inflation", "Fed", "ECB", "gold", "dollar", "recession"]
+
+def get_and_analyze_news():
+    messages = []
     for url, source in feeds:
         feed = feedparser.parse(url)
-        for entry in feed.entries[:3]:
-            title = entry.title
-            summary = BeautifulSoup(entry.get("summary", ""), "html.parser").text.strip()
-            link = entry.link
-            news_items.append(f"• {title} ({source})
+        for entry in feed.entries[:2]:
+            title = BeautifulSoup(entry.title, "html.parser").text
+            summary = BeautifulSoup(entry.get("summary", ""), "html.parser").text
+            impact = "نامشخص"
+            for key in keywords:
+                if key.lower() in (title + summary).lower():
+                    impact = f"اثرگذار (کلمه کلیدی: {key})"
+                    break
+            messages.append(f"[{source}]
+{title}
 {summary}
-{link}")
-
-    return "
-
-".join(news_items)
+تحلیل: {impact}")
+    return "\n\n".join(messages)

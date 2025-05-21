@@ -1,30 +1,30 @@
-def generate_signal(price):
-    if price < 2000:
-        return "Buy", 1980, 2020
-    elif price > 2100:
-        return "Sell", 2080, 2120
-    else:
-        return "Neutral", 2000, 2100
+import requests
 
-def format_analysis(symbol, signal, support, resistance):
-    return f"نماد: {symbol}
-سیگنال امروز: {signal}
-حمایت: {support} | مقاومت: {resistance}\n"
-
-def run():
-    analysis = "[تحلیل تکنیکال خودکار امروز]\n"
-    for symbol, price in {"XAUUSD": 2045, "EURUSD": 1.085, "BTCUSD": 67200}.items():
-        signal, support, resistance = generate_signal(price)
-        analysis += format_analysis(symbol, signal, support, resistance)
-    return analysis
-
-if __name__ == "__main__":
-    import requests
-    message = run()
-    url = "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
+def send_telegram_message(message):
+    url = "https://api.telegram.org/bot7352244492:AAGOrkQXT88z1OH975q09jWkBcoI3G3ifEQ/sendMessage"
     payload = {
-        "chat_id": "<YOUR_CHAT_ID>",
+        "chat_id": "-1002586854094",
         "message_thread_id": 2,
         "text": message
     }
     requests.post(url, data=payload)
+
+def get_technical(symbol):
+    try:
+        url = f"https://www.tradingview.com/symbols/{symbol}/technicals/"
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        response = requests.get(url, headers=headers)
+        if response.ok and "summary" in response.text:
+            # تحلیل دستی چون API رسمی نداره
+            return f"سیگنال امروز {symbol}: نامشخص\nحمایت: ؟ | مقاومت: ؟"
+        else:
+            return f"سیگنال امروز {symbol}: نامشخص\nحمایت: ؟ | مقاومت: ؟"
+    except:
+        return f"سیگنال امروز {symbol}: نامشخص\nحمایت: ؟ | مقاومت: ؟"
+
+if __name__ == "__main__":
+    result = "تحلیل تکنیکال خودکار امروز\n\n"
+    result += "نماد: XAUUSD (انس جهانی)\n" + get_technical("XAUUSD") + "\n\n"
+    result += "نماد: EURUSD\n" + get_technical("EURUSD") + "\n\n"
+    result += "نماد: BTCUSD\n" + get_technical("BTCUSD")
+    send_telegram_message(result)

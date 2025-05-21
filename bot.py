@@ -11,24 +11,18 @@ payload = {
 
 requests.post(url, data=payload)
 
-Masoud Msv, [5/21/2025 6:20 AM]
+Masoud Msv, [5/21/2025 7:03 AM]
 import requests
-import time
+import os
 
-# اطلاعات توکن و چت آیدی
-BOT_TOKEN = "توکن رباتت اینجا"
-CHAT_ID = "آیدی گروه یا چت اینجا"
-
-# پیام تست اولیه
-message = "MasoudGOLDXBot فعال شد. تحلیل واقعی از درون آغاز می‌شود، نه از چارت."
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
 
 url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 payload = {
     "chat_id": CHAT_ID,
-    "text": message
+    "text": "✅ فعال شد. ربات MasoudGOLDX در حال ارسال اخبار لحظه‌ای است."
 }
 
-try:
-    requests.post(url, data=payload)
-except Exception as e:
-    print("خطا:", e)
+response = requests.post(url, data=payload)
+print(response.text)

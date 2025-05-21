@@ -1,3 +1,4 @@
+
 name: Run Telegram Bot Every 15 Minutes
 
 on:
@@ -12,7 +13,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Install dependencies
+        run: pip install requests feedparser
+
       - name: Run the bot
-        run: |
-          pip install requests
-          python3 bot.py
+        run: python3 bot.py

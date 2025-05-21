@@ -9,5 +9,5 @@ def main():
     }
     requests.post(url, data=payload)
 
-if name == "__main__":
+if __name__ =="__main__":
     main()

@@ -51,5 +51,5 @@ def fetch_and_send_latest():
             )
         send_message(msg)
 
-if name == "__main__":
+if __name__ == "__main__":
     fetch_and_send_latest()

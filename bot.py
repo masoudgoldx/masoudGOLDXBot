@@ -4,8 +4,8 @@ import feedparser
 
 def get_news():
     feed_urls = [
-        "https://www.investing.com/rss/news_25.rss",  # بازار جهانی
-        "https://www.coindesk.com/arc/outboundfeeds/rss/"  # ارز دیجیتال
+        "https://www.investing.com/rss/news_25.rss",  # اخبار اقتصادی جهانی
+        "https://www.coindesk.com/arc/outboundfeeds/rss/"  # اخبار کریپتو
     ]
     collected = []
     for url in feed_urls:

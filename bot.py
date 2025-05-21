@@ -18,7 +18,7 @@ def fetch_latest_news():
             yield {
                 "title": entry.title,
                 "link": entry.link,
-                "published": entry.published,
+                "published": entry.published if hasattr(entry, 'published') else "",
             }
 
 def send_message(text):
@@ -39,7 +39,12 @@ def main():
         return
 
     latest = news_list[0]
-    message = f"📢 [خبر اقتصادی جدید]\\nعنوان: {latest['title']}\\nتاریخ: {latest['published']}\\nلینک: {latest['link']}"
+    message = (
+        f"📢 [خبر اقتصادی جدید]\n"
+        f"عنوان: {latest['title']}\n"
+        f"تاریخ: {latest['published']}\n"
+        f"لینک: {latest['link']}"
+    )
     send_message(message)
 
 if name == "__main__":

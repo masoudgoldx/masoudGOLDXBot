@@ -4,8 +4,8 @@ import feedparser
 
 def get_news():
     feed_urls = [
-        "https://www.investing.com/rss/news_25.rss",  # اخبار اقتصادی جهانی
-        "https://www.coindesk.com/arc/outboundfeeds/rss/"  # اخبار کریپتو
+        "https://www.investing.com/rss/news_25.rss",
+        "https://www.coindesk.com/arc/outboundfeeds/rss/"
     ]
     collected = []
     for url in feed_urls:
@@ -13,9 +13,14 @@ def get_news():
         for entry in feed.entries:
             title = entry.title
             link = entry.link
-            summary = BeautifulSoup(entry.summary, 'html.parser').text.strip()
+            summary = ""
+            try:
+                summary = BeautifulSoup(entry.summary, 'html.parser').text.strip()
+            except AttributeError:
+                summary = "تحلیل مشخصی برای این خبر ارائه نشده."
+
             source = "Investing" if "investing" in link else "Coindesk"
-            text = f"[خبر اقتصادی جدید از {source}]\nعنوان: {title}\nتحلیل: تحلیل مشخصی برای این خبر ارائه نشده.\nلینک: {link}"
+            text = f"[خبر اقتصادی جدید از {source}]\nعنوان: {title}\nتحلیل: {summary}\nلینک: {link}"
             collected.append(text)
     return collected
 

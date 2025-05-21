@@ -1,18 +1,26 @@
-name: Run MasoudGOLDX Technical Analysis Every 2 Hours
+name: MasoudGOLDXBot Auto News & Analysis
 
 on:
   schedule:
-    - cron: '0 */2 * * *'
+    - cron: '*/15 * * * *'    # هر ۱۵ دقیقه برای فاندامنتال
+    - cron: '0 */2 * * *'     # هر دو ساعت برای تکنیکال
   workflow_dispatch:
 
 jobs:
-  run-bot:
+  run-bots:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Run tech analysis
+      - name: Install dependencies
         run: |
-          pip install requests beautifulsoup4
-          python3 tech_analysis.py
+          pip install requests feedparser beautifulsoup4
+
+      - name: Run fundamental (bot.py)
+        if: github.event.schedule == '*/15 * * * *'
+        run: python3 bot.py
+
+      - name: Run technical (tech_analysis.py)
+        if: github.event.schedule == '0 */2 * * *'
+        run: python3 tech_analysis.py

@@ -1,4 +1,3 @@
-
 import os
 import requests
 
@@ -6,16 +5,14 @@ TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 THREAD_ID = os.getenv("THREAD_ID")
 
-def send_telegram_message(message):
-    if not TOKEN or not CHAT_ID:
-        return
+def send_telegram_message(msg):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-    payload = {
+    data = {
         "chat_id": CHAT_ID,
-        "text": message,
+        "text": msg,
         "message_thread_id": int(THREAD_ID) if THREAD_ID else None
     }
-    requests.post(url, data=payload)
+    requests.post(url, data=data)
 
 def load_last_message():
     try:

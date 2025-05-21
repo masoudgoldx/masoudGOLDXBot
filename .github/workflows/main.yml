@@ -1,17 +1,3 @@
-Masoud Msv, [5/21/2025 5:20 AM]
-import requests
-
-url = "https://api.telegram.org/bot7352244492:AAGOrkQXT88z1OH975q09jWkBcoI3G3ifEQ/sendMessage"
-
-payload = {
-    "chat_id": "-1002586854094",
-    "message_thread_id": 2,
-    "text": "✅ تست موفق! MasoudGoldXBot فعال شد و آماده ارسال اخبار فاندامنتال است."
-}
-
-requests.post(url, data=payload)
-
-Masoud Msv, [5/21/2025 7:00 AM]
 name: Run Telegram Bot Every 15 Minutes
 
 on:

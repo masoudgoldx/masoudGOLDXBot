@@ -1,26 +1,37 @@
-import random
-
-def analyze_symbol(symbol):
-    signal = random.choice(["صعودی", "نزولی", "خنثی"])
-    support = round(random.uniform(1000, 2000), 2)
-    resistance = round(random.uniform(2000, 3000), 2)
-
-    return {
-        "نماد": symbol,
-        "سیگنال": signal,
-        "حمایت": support,
-        "مقاومت": resistance
+def get_technical_analysis():
+    real_prices = {
+        "XAUUSD": 2384.50,
+        "EURUSD": 1.0867,
+        "BTCUSD": 67890.12
     }
 
-def get_technical_analysis():
-    symbols = ["XAUUSD", "EURUSD", "BTCUSD"]
-    report = "تحلیل تکنیکال خودکار امروز:\n"
-    for symbol in symbols:
-        result = analyze_symbol(symbol)
-        report += (
-            f"\nنماد: {result['نماد']}\n"
-            f"سیگنال: {result['سیگنال']}\n"
-            f"حمایت: {result['حمایت']}\n"
-            f"مقاومت: {result['مقاومت']}\n"
+    signals = {
+        "XAUUSD": "خرید",
+        "EURUSD": "فروش",
+        "BTCUSD": "خنثی"
+    }
+
+    supports = {
+        "XAUUSD": 2365.00,
+        "EURUSD": 1.0800,
+        "BTCUSD": 66000.00
+    }
+
+    resistances = {
+        "XAUUSD": 2400.00,
+        "EURUSD": 1.0900,
+        "BTCUSD": 69000.00
+    }
+
+    report_lines = ["تحلیل تکنیکال خودکار:"]
+    for symbol in real_prices:
+        line = (
+            f"{symbol}:\n"
+            f" - قیمت: {real_prices[symbol]}\n"
+            f" - سیگنال: {signals[symbol]}\n"
+            f" - حمایت: {supports[symbol]}\n"
+            f" - مقاومت: {resistances[symbol]}"
         )
-    return report
+        report_lines.append(line)
+
+    return "\n\n".join(report_lines)

@@ -1,44 +1,56 @@
 import feedparser
-from bs4 import BeautifulSoup
 import requests
+from bs4 import BeautifulSoup
 import os
 
 LAST_NEWS_FILE = "last_news_id.txt"
-FEEDS = [
-    "https://www.investing.com/rss/news_301.rss",        # اقتصاد جهان
-    "https://feeds.bbci.co.uk/persian/rss.xml",           # بی‌بی‌سی فارسی
-]
+TELEGRAM_API_URL = os.getenv("TELEGRAM_TOKEN")
+THREAD_ID = os.getenv("CHAT_ID")
 
 def get_and_analyze_news():
-    last_id = read_last_news_id()
-    news_texts = []
+    feeds = [
+        ("https://www.investing.com/rss/news_301.rss", "Investing"),
+        ("https://feeds.feedburner.com/coindesk", "CoinDesk"),
+    ]
 
-    for url in FEEDS:
+    news_items = []
+
+    last_id = None
+    if os.path.exists(LAST_NEWS_FILE):
+        with open(LAST_NEWS_FILE, "r") as f:
+            last_id = f.read().strip()
+
+    for url, source in feeds:
         feed = feedparser.parse(url)
-        for entry in feed.entries[:5]:
+        for entry in feed.entries:
+            if not hasattr(entry, "id"):
+                continue
             if entry.id == last_id:
                 break
+
             title = entry.title
-            summary = BeautifulSoup(entry.summary, "html.parser").text.strip()
+            summary = BeautifulSoup(entry.summary, "html.parser").text.strip() if hasattr(entry, "summary") else "بدون خلاصه"
             link = entry.link
-            text = f"{title}\n{summary}\n{link}"
-            news_texts.append(text)
 
-    if news_texts:
-        write_last_news_id(feed.entries[0].id)
+            news_items.append({
+                "title": title,
+                "summary": summary,
+                "link": link,
+                "source": source
+            })
 
-    impact = "🔍 تحلیل اخبار:\n"
-    for text in news_texts:
-        impact += f"• {text.splitlines()[0]}\n"
+        if feed.entries and hasattr(feed.entries[0], "id"):
+            with open(LAST_NEWS_FILE, "w") as f:
+                f.write(feed.entries[0].id)
 
-    return impact if news_texts else "هیچ خبر جدید مهمی یافت نشد."
+    return news_items
 
-def read_last_news_id():
-    if not os.path.exists(LAST_NEWS_FILE):
-        return ""
-    with open(LAST_NEWS_FILE, "r") as f:
-        return f.read().strip()
-
-def write_last_news_id(news_id):
-    with open(LAST_NEWS_FILE, "w") as f:
-        f.write(news_id)
+def send_to_telegram(news_items):
+    for item in news_items:
+        msg = f"**{item['title']}**\n{item['summary']}\nمنبع: {item['source']}\n{item['link']}"
+        data = {
+            "chat_id": THREAD_ID,
+            "text": msg,
+            "parse_mode": "Markdown"
+        }
+        requests.post(TELEGRAM_API_URL, data=data)

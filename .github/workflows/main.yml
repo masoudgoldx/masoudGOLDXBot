@@ -1,9 +1,9 @@
 name: MasoudGOLDXBot Auto News & Analysis
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'  # اجرا هر ۱ ساعت
+    - cron: '0 * * * *'  # هر ساعت
+  workflow_dispatch:
 
 jobs:
   run-bot:
@@ -13,11 +13,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install dependencies
-        run: |
-          pip install requests feedparser beautifulsoup4 deep-translator
+        run: pip install feedparser beautifulsoup4 requests
 
       - name: Run Fundamental (bot.py)
         run: python3 bot.py
-
-      - name: Run Technical (tech_analysis.py)
-        run: python3 tech_analysis.py
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}

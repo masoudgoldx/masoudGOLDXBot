@@ -1,50 +1,64 @@
 import requests
 from bs4 import BeautifulSoup
 
-def get_technical_summary_investing(url):
-    res = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
-    soup = BeautifulSoup(res.text, "html.parser")
+def get_signals(url):
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    res = requests.get(url, headers=headers)
+    soup = BeautifulSoup(res.text, 'html.parser')
+
     try:
-        signal = soup.select_one('.summaryTableWrapper .summary').text.strip()
-        support = soup.select_one('.supportResistanceTable tbody tr:nth-child(1) td:nth-child(2)').text
-        resistance = soup.select_one('.supportResistanceTable tbody tr:nth-child(2) td:nth-child(2)').text
-    except:
-        signal, support, resistance = "نامشخص", "?", "?"
+        table = soup.find('table', class_='technicalSummaryTbl')
+        rows = table.find_all('tr')
+        # روند اصلی روزانه
+        signal = rows[2].find_all('td')[1].text.strip()
+        # حمایت و مقاومت
+        support = rows[2].find_all('td')[4].text.strip()
+        resistance = rows[2].find_all('td')[5].text.strip()
+    except Exception:
+        signal = "نامشخص"
+        support = "?"
+        resistance = "?"
+
     return signal, support, resistance
 
-def main():
-    # انس جهانی
-    url_gold = "https://www.investing.com/commodities/gold-technical"
-    sig_gold, sup_gold, res_gold = get_technical_summary_investing(url_gold)
-    # یورو/دلار
-    url_eur = "https://www.investing.com/currencies/eur-usd-technical"
-    sig_eur, sup_eur, res_eur = get_technical_summary_investing(url_eur)
-    # بیت‌کوین
-    url_btc = "https://www.investing.com/crypto/bitcoin/btc-usd-technical"
-    sig_btc, sup_btc, res_btc = get_technical_summary_investing(url_btc)
+urls = {
+    "XAUUSD": "https://www.investing.com/technical/technical-summary?pair=8830",
+    "EURUSD": "https://www.investing.com/technical/technical-summary?pair=1",
+    "BTCUSD": "https://www.investing.com/technical/technical-summary?pair=1057391"
+}
 
-    msg = f"""[تحلیل تکنیکال خودکار امروز]
+signals = {}
 
-نماد: XAUUSD (انس جهانی)
-سیگنال امروز: {sig_gold}
-حمایت: {sup_gold} | مقاومت: {res_gold}
-
-نماد: EURUSD
-سیگنال امروز: {sig_eur}
-حمایت: {sup_eur} | مقاومت: {res_eur}
-
-نماد: BTCUSD
-سیگنال امروز: {sig_btc}
-حمایت: {sup_btc} | مقاومت: {res_btc}
-"""
-
-    url = f"https://api.telegram.org/bot7352244492:AAGOrkQXT88z1OH975q09jWkBcoI3G3ifEQ/sendMessage"
-    payload = {
-        "chat_id": "-1002586854094",
-        "message_thread_id": 2,
-        "text": msg
+for symbol, url in urls.items():
+    signal, support, resistance = get_signals(url)
+    signals[symbol] = {
+        "signal": signal,
+        "support": support,
+        "resistance": resistance
     }
-    requests.post(url, data=payload)
 
-if __name__ == "__main__":
-    main()
+msg = (
+    "[تحلیل تکنیکال خودکار امروز]\n"
+    f"نماد: XAUUSD (انس جهانی)\n"
+    f"سیگنال امروز: {signals['XAUUSD']['signal']}\n"
+    f"حمایت: {signals['XAUUSD']['support']} | مقاومت: {signals['XAUUSD']['resistance']}\n\n"
+    f"نماد: EURUSD\n"
+    f"سیگنال امروز: {signals['EURUSD']['signal']}\n"
+    f"حمایت: {signals['EURUSD']['support']} | مقاومت: {signals['EURUSD']['resistance']}\n\n"
+    f"نماد: BTCUSD\n"
+    f"سیگنال امروز: {signals['BTCUSD']['signal']}\n"
+    f"حمایت: {signals['BTCUSD']['support']} | مقاومت: {signals['BTCUSD']['resistance']}\n"
+)
+
+# توکن و آیدی مخصوص MasoudGOLDXBot
+BOT_TOKEN = "7352244492:AAGOrkQXT88z1OH975q09jWkBcoI3G3ifEQ"
+CHAT_ID = "-1002586854094"
+THREAD_ID = 2
+
+telegram_url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+payload = {
+    "chat_id": CHAT_ID,
+    "message_thread_id": THREAD_ID,
+    "text": msg
+}
+requests.post(telegram_url, data=payload)

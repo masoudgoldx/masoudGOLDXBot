@@ -1,28 +1,25 @@
 import requests
-from bs4 import BeautifulSoup
 import feedparser
+from bs4 import BeautifulSoup
 
 def get_news():
-    feed_urls = [
-        "https://www.investing.com/rss/news_25.rss",
-        "https://www.coindesk.com/arc/outboundfeeds/rss/"
+    urls = [
+        "https://www.investing.com/rss/news_301.rss",  # Economic News
+        "https://www.coindesk.com/arc/outboundfeeds/rss/"  # Crypto News
     ]
-    collected = []
-    for url in feed_urls:
+    messages = []
+    for url in urls:
         feed = feedparser.parse(url)
-        for entry in feed.entries:
+        for entry in feed.entries[:2]:
             title = entry.title
             link = entry.link
-            summary = ""
-            try:
-                summary = BeautifulSoup(entry.summary, 'html.parser').text.strip()
-            except AttributeError:
-                summary = "تحلیل مشخصی برای این خبر ارائه نشده."
-
-            source = "Investing" if "investing" in link else "Coindesk"
-            text = f"[خبر اقتصادی جدید از {source}]\nعنوان: {title}\nتحلیل: {summary}\nلینک: {link}"
-            collected.append(text)
-    return collected
+            source = "Investing" if "investing" in url else "Coindesk"
+            message = f"[خبر اقتصادی جدید از {source}]
+عنوان: {title}
+تحلیل: تحلیل مشخصی برای این خبر ارائه نشده.
+لینک: {link}"
+            messages.append(message)
+    return messages
 
 def read_last_news():
     try:
@@ -36,9 +33,9 @@ def write_last_news(news):
         f.write(news)
 
 def send_telegram_message(message):
-    url = "https://api.telegram.org/bot7352244492:AAGOrkQXT88z1OH975q09jWkBcoI3G3ifEQ/sendMessage"
+    url = "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
     payload = {
-        "chat_id": "-1002586854094",
+        "chat_id": "<YOUR_CHAT_ID>",
         "message_thread_id": 2,
         "text": message
     }
@@ -46,9 +43,8 @@ def send_telegram_message(message):
 
 if __name__ == "__main__":
     all_news = get_news()
-    last_sent = read_last_news()
-    for item in all_news:
-        if item != last_sent:
-            send_telegram_message(item)
-            write_last_news(item)
-            break
+    last_news = read_last_news()
+    for msg in all_news:
+        if msg != last_news:
+            send_telegram_message(msg)
+            write_last_news(msg)

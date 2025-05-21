@@ -1,24 +1,23 @@
-import random
-
-def analyze_symbol(symbol):
-    signal = random.choice(["خرید", "فروش", "خنثی"])
-    support = round(random.uniform(1900, 2000), 2)
-    resistance = round(support + random.uniform(10, 50), 2)
-    return {
-        "نماد": symbol,
-        "سیگنال": signal,
-        "حمایت": support,
-        "مقاومت": resistance,
-    }
+import requests
 
 def get_technical_analysis():
-    symbols = ["XAUUSD", "EURUSD", "BTCUSD"]
-    report = "تحلیل تکنیکال روز:
-"
-    for symbol in symbols:
-        result = analyze_symbol(symbol)
-        report += (
-            f"{result['نماد']}: سیگنال {result['سیگنال']} | حمایت {result['حمایت']} | مقاومت {result['مقاومت']}
-"
-        )
-    return report
+    try:
+        gold = requests.get("https://api.metals.live/v1/spot").json()[0]["gold"]
+        btc = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd").json()["bitcoin"]["usd"]
+        eurusd = requests.get("https://open.er-api.com/v6/latest/EUR").json()["rates"]["USD"]
+    except:
+        return "خطا در دریافت داده تکنیکال."
+
+    return f"""
+XAUUSD:
+- قیمت: {gold}
+- حمایت: {round(gold - 10, 2)}, مقاومت: {round(gold + 10, 2)}
+
+EURUSD:
+- قیمت: {eurusd}
+- حمایت: {round(eurusd - 0.005, 4)}, مقاومت: {round(eurusd + 0.005, 4)}
+
+BTCUSD:
+- قیمت: {btc}
+- حمایت: {round(btc - 1000)}, مقاومت: {round(btc + 1000)}
+""".strip()

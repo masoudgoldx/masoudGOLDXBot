@@ -1,37 +1,29 @@
+
+import requests
+
 def get_technical_analysis():
-    real_prices = {
-        "XAUUSD": 2384.50,
-        "EURUSD": 1.0867,
-        "BTCUSD": 67890.12
-    }
+    try:
+        gold_price = requests.get("https://api.metals.live/v1/spot").json()[0]["gold"]
+        btc_price = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd").json()["bitcoin"]["usd"]
+        eurusd_price = requests.get("https://open.er-api.com/v6/latest/EUR").json()["rates"]["USD"]
+    except:
+        return "خطا در دریافت قیمت‌ها از منابع آنلاین."
 
-    signals = {
-        "XAUUSD": "خرید",
-        "EURUSD": "فروش",
-        "BTCUSD": "خنثی"
-    }
+    return f"""
+تحلیل تکنیکال خودکار:
 
-    supports = {
-        "XAUUSD": 2365.00,
-        "EURUSD": 1.0800,
-        "BTCUSD": 66000.00
-    }
+XAUUSD:
+ - قیمت لحظه‌ای: {gold_price}
+ - سیگنال: خرید
+ - حمایت: {round(gold_price - 15, 2)} | مقاومت: {round(gold_price + 15, 2)}
 
-    resistances = {
-        "XAUUSD": 2400.00,
-        "EURUSD": 1.0900,
-        "BTCUSD": 69000.00
-    }
+EURUSD:
+ - قیمت لحظه‌ای: {eurusd_price}
+ - سیگنال: فروش
+ - حمایت: {round(eurusd_price - 0.005, 4)} | مقاومت: {round(eurusd_price + 0.005, 4)}
 
-    report_lines = ["تحلیل تکنیکال خودکار:"]
-    for symbol in real_prices:
-        line = (
-            f"{symbol}:\n"
-            f" - قیمت: {real_prices[symbol]}\n"
-            f" - سیگنال: {signals[symbol]}\n"
-            f" - حمایت: {supports[symbol]}\n"
-            f" - مقاومت: {resistances[symbol]}"
-        )
-        report_lines.append(line)
-
-    return "\n\n".join(report_lines)
+BTCUSD:
+ - قیمت لحظه‌ای: {btc_price}
+ - سیگنال: خنثی
+ - حمایت: {round(btc_price - 1000)} | مقاومت: {round(btc_price + 1000)}
+""".strip()

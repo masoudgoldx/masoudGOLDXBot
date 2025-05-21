@@ -13,6 +13,6 @@ def send_tg_message(message):
     }
     requests.post(url, data=payload)
 
-if name == "__main__":
+if __name__ == "__main__":
     news = get_news()
     send_tg_message(news)

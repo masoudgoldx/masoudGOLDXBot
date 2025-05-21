@@ -11,7 +11,7 @@ payload = {
 
 requests.post(url, data=payload)
 
-Masoud Msv, [5/21/2025 6:54 AM]
+Masoud Msv, [5/21/2025 7:00 AM]
 name: Run Telegram Bot Every 15 Minutes
 
 on:

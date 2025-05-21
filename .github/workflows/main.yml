@@ -1,9 +1,9 @@
-name: Run Telegram Bot
+name: MasoudGOLDXBot Full Automation
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '0 */2 * * *'    # هر دو ساعت یکبار
+    - cron: '0 */2 * * *'  # اجرای خودکار هر ۲ ساعت
+  workflow_dispatch:
 
 jobs:
   run-bot:
@@ -15,5 +15,8 @@ jobs:
       - name: Install dependencies
         run: pip install requests feedparser beautifulsoup4
 
-      - name: Run bot
+      - name: Run Fundamental (bot.py)
         run: python3 bot.py
+
+      - name: Run Technical (tech_analysis.py)
+        run: python3 tech_analysis.py

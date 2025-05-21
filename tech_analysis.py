@@ -1,54 +1,30 @@
-import requests
-from bs4 import BeautifulSoup
-import feedparser
+def generate_signal(price):
+    if price < 2000:
+        return "Buy", 1980, 2020
+    elif price > 2100:
+        return "Sell", 2080, 2120
+    else:
+        return "Neutral", 2000, 2100
 
-def get_news():
-    feed_urls = [
-        "https://www.investing.com/rss/news_25.rss",
-        "https://www.coindesk.com/arc/outboundfeeds/rss/"
-    ]
-    collected = []
-    for url in feed_urls:
-        feed = feedparser.parse(url)
-        for entry in feed.entries:
-            title = entry.title
-            link = entry.link
-            summary = ""
-            try:
-                summary = BeautifulSoup(entry.summary, 'html.parser').text.strip()
-            except AttributeError:
-                summary = "تحلیل مشخصی برای این خبر ارائه نشده."
+def format_analysis(symbol, signal, support, resistance):
+    return f"نماد: {symbol}
+سیگنال امروز: {signal}
+حمایت: {support} | مقاومت: {resistance}\n"
 
-            source = "Investing" if "investing" in link else "Coindesk"
-            text = f"[خبر اقتصادی جدید از {source}]\nعنوان: {title}\nتحلیل: {summary}\nلینک: {link}"
-            collected.append(text)
-    return collected
+def run():
+    analysis = "[تحلیل تکنیکال خودکار امروز]\n"
+    for symbol, price in {"XAUUSD": 2045, "EURUSD": 1.085, "BTCUSD": 67200}.items():
+        signal, support, resistance = generate_signal(price)
+        analysis += format_analysis(symbol, signal, support, resistance)
+    return analysis
 
-def read_last_news():
-    try:
-        with open("last_news_id.txt", "r") as f:
-            return f.read().strip()
-    except FileNotFoundError:
-        return ""
-
-def write_last_news(news):
-    with open("last_news_id.txt", "w") as f:
-        f.write(news)
-
-def send_telegram_message(message):
-    url = "https://api.telegram.org/bot7352244492:AAGOrkQXT88z1OH975q09jWkBcoI3G3ifEQ/sendMessage"
+if __name__ == "__main__":
+    import requests
+    message = run()
+    url = "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage"
     payload = {
-        "chat_id": "-1002586854094",
+        "chat_id": "<YOUR_CHAT_ID>",
         "message_thread_id": 2,
         "text": message
     }
     requests.post(url, data=payload)
-
-if __name__ == "__main__":
-    all_news = get_news()
-    last_sent = read_last_news()
-    for item in all_news:
-        if item != last_sent:
-            send_telegram_message(item)
-            write_last_news(item)
-            break

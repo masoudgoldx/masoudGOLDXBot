@@ -1,5 +1,6 @@
 import os
 import requests
+from categorize_news import categorize_news_item
 from news_engine import get_and_analyze_news
 from tech_analysis import get_technical_analysis
 from local_prices import get_local_market

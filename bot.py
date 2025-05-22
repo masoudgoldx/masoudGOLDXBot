@@ -15,15 +15,18 @@ def send_telegram_message(message):
         return
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    data = {
-        "chat_id": chat_id,
-        "text": message
-    }
+    max_length = 4000  # Limit is 4096, we keep margin
 
-    response = requests.post(url, data=data)
+    parts = [message[i:i+max_length] for i in range(0, len(message), max_length)]
 
-    print(f"[Telegram] Status Code: {response.status_code}")
-    print(f"[Telegram] Response: {response.text}")
+    for idx, part in enumerate(parts):
+        data = {
+            "chat_id": chat_id,
+            "text": part
+        }
+        response = requests.post(url, data=data)
+        print(f"[Telegram] Part {idx+1}/{len(parts)} Status: {response.status_code}")
+        print(f"[Telegram] Part {idx+1} Response: {response.text}")
 
 if __name__ == "__main__":
     fundamental = get_and_analyze_news()

@@ -15,13 +15,11 @@ if __name__ == "__main__":
     technical = get_technical_analysis()
 
     if fundamental:
-        message = "اخبار فاندامنتال:
-" + "\n\n".join(
+        message = "اخبار فاندامنتال:\n" + "\n\n".join(
             [f"{item['title']}\n{item['summary']}\n{item['link']}" for item in fundamental]
         )
     else:
         message = "فعلاً خبر فاندامنتال جدیدی در دسترس نیست."
 
     message += "\n\n" + technical
-
     send_telegram_message(message)

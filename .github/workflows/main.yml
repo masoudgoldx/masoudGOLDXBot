@@ -2,21 +2,27 @@ name: MasoudGOLDXBot Auto News & Analysis
 
 on:
   schedule:
-    - cron: '0 * * * *'  # هر ساعت
-  workflow_dispatch:
+    - cron: '0 * * * *'  # اجرای خودکار هر ساعت
+  workflow_dispatch:     # اجرای دستی از GitHub
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
       - name: Install dependencies
-        run: pip install feedparser beautifulsoup4 requests
+        run: pip install -r requirements.txt
 
       - name: Run Fundamental (bot.py)
-        run: python3 bot.py
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: python bot.py

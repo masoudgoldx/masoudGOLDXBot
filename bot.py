@@ -1,3 +1,4 @@
+
 import os
 import requests
 from news_engine import get_and_analyze_news
@@ -38,7 +39,9 @@ if __name__ == "__main__":
         cat = categorize_news_item(item)
         categorized[cat].append(item)
 
-    fundamental_message = "اخبار فاندامنتال دسته‌بندی‌شده:\n\n"
+    fundamental_message = "اخبار فاندامنتال دسته‌بندی‌شده:
+
+"
     for key, items in categorized.items():
         if items:
             fundamental_message += f"== {key} ==\n"
@@ -46,4 +49,4 @@ if __name__ == "__main__":
             fundamental_message += "\n\n"
 
     message = fundamental_message + "\n\n" + technical + "\n\n" + local + "\n\n" + calendar
-    send_telegram_message(message
+    send_telegram_message(message)

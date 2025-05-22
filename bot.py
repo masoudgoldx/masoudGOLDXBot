@@ -7,6 +7,13 @@ def send_telegram_message(message):
     token = os.getenv("BOT_TOKEN")
     chat_id = os.getenv("CHAT_ID")
 
+    print(f"[Debug] BOT_TOKEN: {token}")
+    print(f"[Debug] CHAT_ID: {chat_id}")
+
+    if not token or not chat_id:
+        print("[Error] BOT_TOKEN or CHAT_ID is not set! Please check GitHub secrets.")
+        return
+
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     data = {
         "chat_id": chat_id,
@@ -15,7 +22,6 @@ def send_telegram_message(message):
 
     response = requests.post(url, data=data)
 
-    # لاگ وضعیت پاسخ تلگرام
     print(f"[Telegram] Status Code: {response.status_code}")
     print(f"[Telegram] Response: {response.text}")
 
@@ -36,10 +42,8 @@ if __name__ == "__main__":
     else:
         message = "هیچ خبر فاندامنتالی در منابع موجود نیست."
 
-    # اضافه کردن تحلیل تکنیکال
     message += "\n\n" + technical
 
-    # اگر پیام نهایی خیلی کوتاه بود، پیام تستی ارسال شود
     if len(message.strip()) < 10:
         message = "[Test] Bot executed but no valid data found."
 

@@ -1,20 +1,32 @@
-def get_technical_analysis():
+import requests
+from bs4 import BeautifulSoup
+
+def get_local_market():
     try:
-        btc = get_price("bitcoin")
-        xau = get_price("tether-gold")
-        eur = get_price("euro")
+        url = "https://www.tgju.org/"
+        headers = {
+            "User-Agent": "Mozilla/5.0"
+        }
 
-        analysis = f"""
-        🔥 قیمت انس طلا: {xau} $
-        🇺🇸 قیمت یورو: {eur} $
-        ₿ قیمت بیت‌کوین: {btc} $
+        response = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-        ▼ تحلیل تکنیکال:
-        انس: مقاومت در 2450 - حمایت در 2350
-        یورو: نوسان محدود در محدوده 1.08-1.10
-        بیت‌کوین: رنج بین 68 تا 72 هزار
-        """
-        return analysis
+        def get_price_by_id(element_id):
+            tag = soup.find("td", id=element_id)
+            if tag:
+                return tag.text.strip()
+            else:
+                return f"(یافت نشد: {element_id})"
+
+        prices = {
+            "دلار آزاد": get_price_by_id("price_dollar_rl"),
+            "سکه امامی": get_price_by_id("price_sekee"),
+            "طلا 18 عیار": get_price_by_id("price_geram18"),
+            "انس جهانی": get_price_by_id("gold")
+        }
+
+        message = "\n".join([f"{key}: {value} تومان" for key, value in prices.items()])
+        return f"قیمت‌های لحظه‌ای بازار:\n\n{message}"
 
     except Exception as e:
-        return f"خطا در تحلیل تکنیکال: {e}"
+        return f"خطا در دریافت نرخ‌های بازار داخلی: {e}"

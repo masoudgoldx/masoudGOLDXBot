@@ -2,6 +2,7 @@ import os
 import requests
 from news_engine import get_and_analyze_news
 from tech_analysis import get_technical_analysis
+from local_prices import get_local_market
 
 def send_telegram_message(message):
     token = os.getenv("BOT_TOKEN")
@@ -15,7 +16,7 @@ def send_telegram_message(message):
         return
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    max_length = 4000  # Limit is 4096, we keep margin
+    max_length = 4000
 
     parts = [message[i:i+max_length] for i in range(0, len(message), max_length)]
 
@@ -31,9 +32,11 @@ def send_telegram_message(message):
 if __name__ == "__main__":
     fundamental = get_and_analyze_news()
     technical = get_technical_analysis()
+    local = get_local_market()
 
     print(f"[Debug] Fundamental: {fundamental}")
     print(f"[Debug] Technical: {technical}")
+    print(f"[Debug] Local Market: {local}")
 
     if fundamental:
         try:
@@ -46,6 +49,7 @@ if __name__ == "__main__":
         message = "هیچ خبر فاندامنتالی در منابع موجود نیست."
 
     message += "\n\n" + technical
+    message += "\n\n" + local
 
     if len(message.strip()) < 10:
         message = "[Test] Bot executed but no valid data found."

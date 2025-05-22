@@ -1,11 +1,3 @@
-import requests
-
-def get_price(symbol):
-    url = f"https://api.coingecko.com/api/v3/simple/price?ids={symbol}&vs_currencies=usd"
-    response = requests.get(url, timeout=10)
-    data = response.json()
-    return data[symbol]["usd"]
-
 def get_technical_analysis():
     try:
         btc = get_price("bitcoin")
@@ -14,15 +6,14 @@ def get_technical_analysis():
 
         analysis = f"""
         🔥 قیمت انس طلا: {xau} $
-        🇺🇸 قیمت یورو (نماد دلار داخلی): {eur} $
+        🇺🇸 قیمت یورو: {eur} $
         ₿ قیمت بیت‌کوین: {btc} $
 
         ▼ تحلیل تکنیکال:
         انس: مقاومت در 2450 - حمایت در 2350
-        دلار: وابسته به نوسانات یورو و انس
-        بیت‌کوین: وضعیت ناپایدار بین 68 تا 72 هزار
+        یورو: نوسان محدود در محدوده 1.08-1.10
+        بیت‌کوین: رنج بین 68 تا 72 هزار
         """
-
         return analysis
 
     except Exception as e:

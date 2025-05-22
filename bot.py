@@ -1,24 +1,21 @@
 import os
 import requests
-from categorize_news import categorize_news_item
 from news_engine import get_and_analyze_news
 from tech_analysis import get_technical_analysis
 from local_prices import get_local_market
+from economic_calendar import get_economic_calendar
+from categorize_news import categorize_news_item
 
 def send_telegram_message(message):
     token = os.getenv("BOT_TOKEN")
     chat_id = os.getenv("CHAT_ID")
 
-    print(f"[Debug] BOT_TOKEN: {token}")
-    print(f"[Debug] CHAT_ID: {chat_id}")
-
     if not token or not chat_id:
-        print("[Error] BOT_TOKEN or CHAT_ID is not set! Please check GitHub secrets.")
+        print("[Error] BOT_TOKEN or CHAT_ID is not set!")
         return
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     max_length = 4000
-
     parts = [message[i:i+max_length] for i in range(0, len(message), max_length)]
 
     for idx, part in enumerate(parts):
@@ -34,25 +31,19 @@ if __name__ == "__main__":
     fundamental = get_and_analyze_news()
     technical = get_technical_analysis()
     local = get_local_market()
+    calendar = get_economic_calendar()
 
-    print(f"[Debug] Fundamental: {fundamental}")
-    print(f"[Debug] Technical: {technical}")
-    print(f"[Debug] Local Market: {local}")
+    categorized = {'انس طلا': [], 'یورو': [], 'بیت‌کوین': [], 'متفرقه': []}
+    for item in fundamental:
+        cat = categorize_news_item(item)
+        categorized[cat].append(item)
 
-    if fundamental:
-        try:
-            message = "اخبار فاندامنتال:\n\n" + "\n\n".join(
-                [f"{item['title']}\n{item['summary']}\n{item['link']}" for item in fundamental]
-            )
-        except Exception as e:
-            message = f"[Error formatting fundamental]: {e}"
-    else:
-        message = "هیچ خبر فاندامنتالی در منابع موجود نیست."
+    fundamental_message = "اخبار فاندامنتال دسته‌بندی‌شده:\n\n"
+    for key, items in categorized.items():
+        if items:
+            fundamental_message += f"== {key} ==\n"
+            fundamental_message += "\n\n".join([f"{i['title']}\n{i['summary']}\n{i['link']}" for i in items])
+            fundamental_message += "\n\n"
 
-    message += "\n\n" + technical
-    message += "\n\n" + local
-
-    if len(message.strip()) < 10:
-        message = "[Test] Bot executed but no valid data found."
-
-    send_telegram_message(message)
+    message = fundamental_message + "\n\n" + technical + "\n\n" + local + "\n\n" + calendar
+    send_telegram_message(message

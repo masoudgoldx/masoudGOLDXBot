@@ -39,14 +39,14 @@ if __name__ == "__main__":
         cat = categorize_news_item(item)
         categorized[cat].append(item)
 
-    fundamental_message = "اخبار فاندامنتال دسته‌بندی‌شده:
+    fundamental_message = """اخبار فاندامنتال دسته‌بندی‌شده:
 
-"
+"""
     for key, items in categorized.items():
         if items:
             fundamental_message += f"== {key} ==\n"
-            fundamental_message += "\n\n".join([f"{i['title']}\n{i['summary']}\n{i['link']}" for i in items])
-            fundamental_message += "\n\n"
+            for i in items:
+                fundamental_message += f"{i['title']}\n{i['summary']}\n{i['link']}\n\n"
 
     message = fundamental_message + "\n\n" + technical + "\n\n" + local + "\n\n" + calendar
     send_telegram_message(message)

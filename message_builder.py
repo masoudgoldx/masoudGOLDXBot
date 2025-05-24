@@ -13,4 +13,4 @@ def build_message(news_by_asset, tech, local, calendar):
     message += calendar + "\n\n"
     message += "تحلیل و گردآوری: Masoudgoldx"
     return message
-return f"{msg}\n\n🆕 تست دوم"
+return f"{msg}\n\n🆕 ست دوم"

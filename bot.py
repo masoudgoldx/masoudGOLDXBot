@@ -5,7 +5,7 @@ from local_prices import get_local_market
 from economic_calendar import get_economic_calendar
 from message_builder import build_message
 from telegram_sender import send_telegram_message
-from message_guard import is_new_message
+# from message_guard import is_new_message  # فعلاً غیرفعال شده
 
 if __name__ == "__main__":
     news = get_and_analyze_news()
@@ -15,8 +15,9 @@ if __name__ == "__main__":
 
     message = build_message(news, tech, local, calendar)
 
-    if not is_new_message(message):
-        print("⛔️ پیام تکراری است. ارسال نمی‌شود.")
-        exit()
+    # بررسی پیام تکراری غیرفعال شده برای تست راحت‌تر
+    # if not is_new_message(message):
+    #     print("⛔️ پیام تکراری است. ارسال نمی‌شود.")
+    #     exit()
 
     send_telegram_message(message)

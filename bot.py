@@ -1,4 +1,3 @@
-
 import os
 from news_engine import get_and_analyze_news
 from tech_analysis import get_technical_analysis
@@ -17,7 +16,7 @@ if __name__ == "__main__":
     message = build_message(news, tech, local, calendar)
 
     if not is_new_message(message):
-        print("⛔ پیام تکراری است. ارسال نمی‌شود.")
+        print("⛔️ پیام تکراری است. ارسال نمی‌شود.")
         exit()
 
     send_telegram_message(message)

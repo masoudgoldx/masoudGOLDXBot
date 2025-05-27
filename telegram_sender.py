@@ -13,3 +13,5 @@ def send_telegram_message(text):
     if response.status_code != 200:
         print("❌ خطا در ارسال پیام:", response.status_code)
         print("پاسخ سرور:", response.text)
+    else:
+        print("✅ پیام با موفقیت ارسال شد")
